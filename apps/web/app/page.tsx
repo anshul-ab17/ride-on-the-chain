@@ -1,102 +1,150 @@
-import Image, { type ImageProps } from "next/image";
-import { Button } from "@repo/ui/button";
-import styles from "./page.module.css";
+'use client';
 
-type Props = Omit<ImageProps, "src"> & {
-  srcLight: string;
-  srcDark: string;
-};
+import { useScroll, useTransform, motion, useSpring } from 'framer-motion';
+import { useRef, useState, useEffect } from 'react';
+import Hero3D from '../components/Hero3D';
+import { Playfair_Display, Space_Mono } from 'next/font/google';
 
-const ThemeImage = (props: Props) => {
-  const { srcLight, srcDark, ...rest } = props;
+const playfair = Playfair_Display({ subsets: ['latin'], weight: ['400', '500', '700'] });
+const spaceMono = Space_Mono({ subsets: ['latin'], weight: ['400', '700'] });
+
+export default function LandingPage() {
+  const containerRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"]
+  });
+
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
+
+  // Scene Opacities & Transforms
+  const heroOpacity = useTransform(smoothProgress, [0, 0.15], [1, 0]);
+  const heroScale = useTransform(smoothProgress, [0, 0.2], [1, 0.8]);
+  
+  const statsOpacity = useTransform(smoothProgress, [0.15, 0.25, 0.45], [0, 1, 0]);
+  const statsX = useTransform(smoothProgress, [0.15, 0.25], [100, 0]);
+
+  const featureOpacity = useTransform(smoothProgress, [0.45, 0.55, 0.8], [0, 1, 0]);
+  const featureY = useTransform(smoothProgress, [0.45, 0.55], [50, 0]);
+
+  const [progressValue, setProgressValue] = useState(0);
+  useEffect(() => {
+    return smoothProgress.onChange(v => setProgressValue(v));
+  }, [smoothProgress]);
 
   return (
-    <>
-      <Image {...rest} src={srcLight} className="imgLight" />
-      <Image {...rest} src={srcDark} className="imgDark" />
-    </>
-  );
-};
+    <div ref={containerRef} className="scene-container">
+      {/* 3D Background Layer */}
+      <Hero3D scrollProgress={progressValue} />
 
-export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <ThemeImage
-          className={styles.logo}
-          srcLight="turborepo-dark.svg"
-          srcDark="turborepo-light.svg"
-          alt="Turborepo logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>apps/web/app/page.tsx</code>
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new/clone?demo-description=Learn+to+implement+a+monorepo+with+a+two+Next.js+sites+that+has+installed+three+local+packages.&demo-image=%2F%2Fimages.ctfassets.net%2Fe5382hct74si%2F4K8ZISWAzJ8X1504ca0zmC%2F0b21a1c6246add355e55816278ef54bc%2FBasic.png&demo-title=Monorepo+with+Turborepo&demo-url=https%3A%2F%2Fexamples-basic-web.vercel.sh%2F&from=templates&project-name=Monorepo+with+Turborepo&repository-name=monorepo-turborepo&repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fturborepo%2Ftree%2Fmain%2Fexamples%2Fbasic&root-directory=apps%2Fdocs&skippable-integrations=1&teamSlug=vercel&utm_source=create-turbo"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://turborepo.dev/docs?utm_source"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+      <nav className="glass-nav">
+        <div className={spaceMono.className} style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--primary)' }}>
+          RIDEX®
         </div>
-        <Button appName="web" className={styles.secondary}>
-          Open alert
-        </Button>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com/templates?search=turborepo&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+        <div className="mono" style={{ display: 'flex', gap: '3rem' }}>
+          <span>Protocol</span>
+          <span>Fleet</span>
+          <span>Security</span>
+        </div>
+      </nav>
+
+      {/* Scene 1: Cinematic Intro */}
+      <section className="scene">
+        <motion.div 
+          style={{ opacity: heroOpacity, scale: heroScale, textAlign: 'center', zIndex: 10 }}
+          className="container"
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://turborepo.dev?utm_source=create-turbo"
-          target="_blank"
-          rel="noopener noreferrer"
+          <div className={`${spaceMono.className} mono`} style={{ color: 'var(--primary)', marginBottom: '1rem' }}>
+            Decentralized Mobility
+          </div>
+          <h1 className={playfair.className} style={{ fontSize: '10vw', lineHeight: 0.9, marginBottom: '2rem' }}>
+            On-Chain <br/> <em style={{ color: 'var(--primary)', fontStyle: 'italic' }}>Elegance</em>
+          </h1>
+          <p style={{ maxWidth: '600px', margin: '0 auto 3rem', color: 'var(--on-surface-variant)', fontSize: '1.2rem', lineHeight: 1.6 }}>
+            The first high-fidelity ride-hailing protocol engineered for the Solana ecosystem. 
+            Pure logic. Zero middleman. Radical efficiency.
+          </p>
+          <button className="premium-button">
+            ENTER THE PROTOCOL
+          </button>
+        </motion.div>
+      </section>
+
+      {/* Scene 2: Tech Specs */}
+      <section className="scene" style={{ background: 'transparent' }}>
+        <motion.div 
+          style={{ opacity: statsOpacity, x: statsX, zIndex: 10 }}
+          className="container"
         >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to turborepo.dev →
-        </a>
-      </footer>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10vw' }}>
+            <div>
+              <h2 className={playfair.className} style={{ fontSize: '5rem', marginBottom: '2rem', lineHeight: 1 }}>
+                Real-time <br/> Precision.
+              </h2>
+              <p style={{ color: 'var(--on-surface-variant)', fontSize: '1.1rem', marginBottom: '3rem' }}>
+                Powered by Solana's 65,000 TPS architecture, ensuring sub-second matching and instant settlement.
+              </p>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              {[
+                { label: "PROTOCOL FEES", value: "1.2%" },
+                { label: "AVG CROSS-TIME", value: "0.4s" },
+                { label: "SOLANA PDA ESCROW", value: "ACTIVE" }
+              ].map((stat, i) => (
+                <div key={i} className="stat-card">
+                  <div className="mono" style={{ color: 'var(--primary)', marginBottom: '0.5rem' }}>{stat.label}</div>
+                  <div className={playfair.className} style={{ fontSize: '2.5rem' }}>{stat.value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Scene 3: Feature Chapters */}
+      <section className="scene">
+        <motion.div 
+          style={{ opacity: featureOpacity, y: featureY, zIndex: 10, textAlign: 'center' }}
+          className="container"
+        >
+          <div className="mono" style={{ color: 'var(--primary)', marginBottom: '2rem' }}>
+            The Architecture
+          </div>
+          <h2 className={playfair.className} style={{ fontSize: '8vw', lineHeight: 1, marginBottom: '5rem' }}>
+            Trustless by <br/> Design.
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4rem', textAlign: 'left' }}>
+            {[
+              { title: "Direct P2P", text: "Matches occur directly on-chain, eliminating the 20% commission traps of legacy platforms." },
+              { title: "Sovereign Rep", text: "Your rating is an NFT-like asset on the Solana ledger. You own your trust score." },
+              { title: "Liquid Payouts", text: "Drivers receive SOL the moment the ride is complete. No waiting for weekly deposits." }
+            ].map((f, i) => (
+              <div key={i}>
+                <h3 className={playfair.className} style={{ fontSize: '2rem', marginBottom: '1.5rem', color: 'var(--primary)' }}>{f.title}</h3>
+                <p style={{ color: 'var(--on-surface-variant)', lineHeight: 1.8 }}>{f.text}</p>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Scene 4: Footer / CTA */}
+      <section className="scene">
+         <div style={{ textAlign: 'center' }}>
+           <h2 className={playfair.className} style={{ fontSize: '6vw', marginBottom: '2rem' }}>Ready to Move?</h2>
+           <button className="premium-button">CONNECT PHANTOM</button>
+           <div className="mono" style={{ marginTop: '5rem', opacity: 0.3 }}>
+             © 2026 RideX Protocol // Bangalore // SF // Singapore
+           </div>
+         </div>
+      </section>
+
+      <div className="solana-pulse" style={{ bottom: '10%', right: '10%' }} />
+      <div className="solana-pulse" style={{ top: '20%', left: '-10%', opacity: 0.05 }} />
     </div>
   );
 }
